@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced Pronunciation Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url("images/background.jpg") no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+            padding: 40px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.65); /* ← No image here anymore */
+            color: white;
+            width: 65%;
+            margin: auto;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0px 0px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            animation: slideUp 1s ease-out;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            width: 120px;
+            margin-bottom: 10px;
+            animation: bounce 1.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-8px); }
+        }
+
+        h2 {
+            font-size: 28px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 5px black;
+        }
+
+        .word-box {
+            font-size: 55px;
+            font-weight: bold;
+            margin: 20px;
+            padding: 20px;
+            border: 3px solid white;
+            border-radius: 12px;
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.4);
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px white; }
+            to { box-shadow: 0 0 20px cyan; }
+        }
+
+        .btn {
+            padding: 12px 22px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0px 0px 10px white;
+        }
+
+        .speak-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .next-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .level-btn {
+            background: #ffc107;
+            color: black;
+        }
+
+        .feedback {
+            font-size: 20px;
+            margin-top: 10px;
+            text-shadow: 1px 1px 3px black;
+        }
+
+        .score-box, .level-box {
+            font-size: 18px;
+            margin-top: 10px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px black;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="images/logo.png" class="logo" alt="Logo">
+
+    <h2>🎮 Advanced Pronunciation Challenge</h2>
+
+    <h3>Say this word:</h3>
+    <div class="word-box" id="word">READY</div>
+
+    <br>
+
+    <button class="btn speak-btn" onclick="startListening()">🎤 Speak</button>
+    <button class="btn next-btn" onclick="nextWord()">➡️ Next Word</button>
+
+    <br><br>
+
+    <button class="btn level-btn" onclick="setLevel('easy')">Easy</button>
+    <button class="btn level-btn" onclick="setLevel('medium')">Medium</button>
+    <button class="btn level-btn" onclick="setLevel('hard')">Hard</button>
+    <button class="btn level-btn" onclick="setLevel('master')">Master</button>
+
+    <p><b>Your Speech:</b> <span id="studentText"></span></p>
+    <p class="feedback"><b>Feedback:</b> <span id="feedback"></span></p>
+
+    <div class="score-box">Score: <span id="score">0</span></div>
+    <div class="level-box">Current Level: <span id="level">Easy</span></div>
+</div>
+
+<script>
+const wordBank = {
+    easy: ["cat","dog","sun","ball","tree","book","pen","fish","bird","hand",
+           "milk","door","cake","rain","shoe","lamp","bed","cup","star","moon",
+           "car","bus","train","boat","hat","shirt","desk","table","apple","banana",
+           "orange","pear","grape","chair","floor","wall","clock","phone","baby","mother",
+           "father","friend","water","bread","cheese","pizza","juice","paper","color","green",
+           "blue","red","yellow","small","big","happy","sad","run","jump","play","walk","talk"],
+
+    medium: ["school","computer","teacher","window","garden","library","holiday","restaurant",
+             "mountain","village","kitchen","hospital","airport","station","telephone",
+             "internet","keyboard","classroom","homework","notebook","backpack","children",
+             "morning","evening","weather","rainbow","science","history","language","english",
+             "exercise","practice","listen","speak","read","write","understand","remember",
+             "question","answer","picture","camera","video","music","guitar","piano","football",
+             "basketball","swimming","running","travelling","shopping","market","building",
+             "country","city","street","traffic","museum","theater","cinema","ticket","ticket"],
+
+    hard: ["through","thought","beautiful","daughter","enough","knowledge","psychology",
+           "conscious","rhythm","strength","anonymous","architect","vegetable","temperature",
+           "environment","development","communication","performance","imagination","experience",
+           "intelligent","dictionary","technology","application","information","presentation",
+           "explanation","education","relationship","improvement","pronunciation","competition",
+           "celebration","achievement","government","attention","profession","community",
+           "difference","important","interesting","confident","challenge","practice",
+           "understanding","department","international","opportunity","business","management",
+           "organization","revolution","conversation","advertisement","comfortable","recommend",
+           "responsible","scientific","technical","academic","creative","motivated"],
+
+    master: ["entrepreneur","phenomenon","pronunciation","synchronization","misinterpretation",
+             "counterproductive","interdisciplinary","internationalization","responsibility",
+             "miscommunication","electromagnetic","characteristically","incomprehensible",
+             "transformational","representation","multidisciplinary","misunderstanding",
+             "acknowledgement","responsibilities","professionalism","entrepreneurship",
+             "contextualization","institutionalization","reconstruction","unconventional",
+             "transformation","congratulations","self-discipline","misrepresentation",
+             "hyperresponsibility","multilingualism","globalization","decentralization",
+             "revolutionary","interoperability","infrastructure","organizationally",
+             "interpretation","transcription","collaboration","certification","specialization",
+             "computationally","multifunctional","biotechnology","environmentalism",
+             "anthropological","psycholinguistic","neuroplasticity","interconnectivity",
+             "sustainability","accountability","miscalculation","determination",
+             "personalization","digitalization","modernization","implementation",
+             "standardization","visualization"]
+};
+
+let currentLevel = "easy";
+let targetWord = "";
+let score = 0;
+
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+recognition.lang = "en-US";
+
+function setLevel(level) {
+    currentLevel = level;
+    document.getElementById("level").innerText =
+        level.charAt(0).toUpperCase() + level.slice(1);
+    nextWord();
+}
+
+function nextWord() {
+    let words = wordBank[currentLevel];
+    targetWord = words[Math.floor(Math.random() * words.length)];
+    document.getElementById("word").innerText = targetWord.toUpperCase();
+    document.getElementById("studentText").innerText = "";
+    document.getElementById("feedback").innerText = "";
+}
+
+function startListening() {
+    recognition.start();
+}
+
+recognition.onresult = function(event) {
+    let studentSpeech = event.results[0][0].transcript.toLowerCase();
+    document.getElementById("studentText").innerText = studentSpeech;
+
+    if (studentSpeech.includes(targetWord.toLowerCase())) {
+        document.getElementById("feedback").innerText = "✅ Excellent pronunciation!";
+        score += 1;
+        document.getElementById("score").innerText = score;
+
+        let speech = new SpeechSynthesisUtterance(targetWord);
+        speech.lang = "en-US";
+        window.speechSynthesis.speak(speech);
+
+    } else {
+        document.getElementById("feedback").innerText =
+            "⚠️ Try again. Listen and repeat.";
+
+        let speech = new SpeechSynthesisUtterance(targetWord);
+        speech.lang = "en-US";
+        window.speechSynthesis.speak(speech);
+    }
+};
+</script>
+
+</body>
+</html>
